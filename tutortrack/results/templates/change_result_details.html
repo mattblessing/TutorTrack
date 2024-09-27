@@ -1,0 +1,111 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<script>
+    var childID = {{ childID| safe }}
+    var resultID = {{ resultID| safe }}
+</script>
+
+<div class="content-section">
+    <div class="row">
+        <div class="col-10">
+            <legend class="border-bottom mb-3">Result Details</legend>
+        </div>
+        <div class="col">
+            <a class="btn btn-outline-secondary btn-lg" style="width: 90px;"
+                href="{{ url_for('results.view_results') }}">Back</a>
+        </div>
+    </div>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div class="form-group mb-3">
+            {{ form.child.label(class="form-select-label") }}
+            {% if form.child.errors %}
+            {{ form.child(class="form-select form-select-sm is-invalid", style="width: 50%;", id="childInput") }}
+            <div class="invalid-feedback">
+                {% for error in form.child.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+            {% else %}
+            {{ form.child(class="form-select form-select-sm", style="width: 50%;", id="childInput") }}
+            {% endif %}
+        </div>
+        <div class="form-group mb-3">
+            {{ form.topic.label(class="form-select-label") }}
+            {% if form.topic.errors %}
+            {{ form.topic(class="form-select form-select-sm is-invalid", style="width: 50%;", id="topicInput") }}
+            <div class="invalid-feedback">
+                {% for error in form.topic.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+            {% else %}
+            {{ form.topic(class="form-select form-select-sm", style="width: 50%;", id="topicInput") }}
+            {% endif %}
+            <small id="noTopic" style="color: red;"></small>
+        </div>
+        <div class="form-group mb-3">
+            {{ form.date.label(class="form-control-label") }}
+            {% if form.date.errors %}
+            {{ form.date(class="form-control is-invalid", id="dateInput",
+            placeholder="Enter date the result was completed") }}
+            <div class="invalid-feedback">
+                {% for error in form.date.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+            {% else %}
+            {{ form.date(class="form-control", id="dateInput", placeholder="Enter date the result was completed") }}
+            {% endif %}
+        </div>
+        <div class="form-group mb-3">
+            {{ form.type.label(class="form-select-label") }}
+            {% if form.type.errors %}
+            {{ form.type(class="form-select form-select-sm is-invalid", style="width: 50%;", id="typeInput") }}
+            <div class="invalid-feedback">
+                {% for error in form.type.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+            {% else %}
+            {{ form.type(class="form-select form-select-sm", style="width: 50%;", id="typeInput") }}
+            {% endif %}
+        </div>
+        <div class="form-group mb-3">
+            {{ form.studentMark.label(class="form-control-label") }}
+            {% if form.studentMark.errors %}
+            {{ form.studentMark(class="form-control is-invalid", id="studentMarkInput",
+            placeholder="Enter student mark") }}
+            <div class="invalid-feedback">
+                {% for error in form.studentMark.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+            {% else %}
+            {{ form.studentMark(class="form-control", id="studentMarkInput", placeholder="Enter student mark") }}
+            {% endif %}
+        </div>
+        <div class="form-group mb-3">
+            {{ form.totalMark.label(class="form-control-label") }}
+            {% if form.totalMark.errors %}
+            {{ form.totalMark(class="form-control is-invalid", id="totalMarkInput", placeholder="Enter total mark") }}
+            <div class="invalid-feedback">
+                {% for error in form.totalMark.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+            {% else %}
+            {{ form.totalMark(class="form-control", id="totalMarkInput", placeholder="Enter total mark") }}
+            {% endif %}
+        </div>
+        <div class="form-group mb-3">
+            {{ form.submit(class="btn btn-outline-primary") }}
+        </div>
+    </form>
+</div>
+
+<script type="text/javascript" src="{{ url_for('results.static', filename='change_result_details_form.js') }}"></script>
+
+{% endblock content %}

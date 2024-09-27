@@ -1,0 +1,108 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+{% if current_user.type == "tutor" %}
+<div class="modal fade" id="deleteConfirm" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmLabel">Delete Session</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this session? Any linked parent accounts will be unable to view this
+                session.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a class="btn btn-danger"
+                    href="{{ url_for('sessions.delete_session', childID=child[1], sessionID=session[0]) }}">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-10">
+        <legend class="border-bottom mb-3">Sessions</legend>
+    </div>
+    <div class="col">
+        <a class="btn btn-outline-secondary" href="{{ url_for('sessions.view_sessions')}}"
+            style="width: 100px;">Back</a>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-5 m-2">
+                <h4 class="card-title mb-4">{{ child[2]}} {{ child[3] }}</h4>
+            </div>
+            {% if current_user.type == "tutor" %}
+            <div class="col">
+                <a class="btn btn-outline-secondary btn-lg"
+                    href="{{ url_for('sessions.change_session_details', childID=child[1], sessionID=session[0]) }}">Change
+                    Details</a>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-outline-danger btn-lg" data-bs-toggle="modal"
+                    data-bs-target="#deleteConfirm">Delete Session</button>
+            </div>
+            {% endif %}
+        </div>
+        <div class="card-text">
+            <div class="row">
+                <div class="col-2">
+                    <p>Date:</p>
+                </div>
+                <div class="col">
+                    <p>{{ session[1][8:] }}/{{ session[1][5:7] }}/{{ session[1][:4] }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-2">
+                    <p>Time:</p>
+                </div>
+                <div class="col">
+                    <p>{{ session[2][:5] }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-2">
+                    <p>Duration:</p>
+                </div>
+                <div class="col">
+                    <p>{{ session[3] }} minutes</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-2">
+                    <p>Description:</p>
+                </div>
+                <div class="col">
+                    <p>{{ session[4] }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-2">
+                    <p>Child focus:</p>
+                </div>
+                <div class="col">
+                    <p>{{ session[5] }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-2">
+                    <p>Ranking:</p>
+                </div>
+                <div class="col">
+                    <p>{{ session[6] }}/10</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

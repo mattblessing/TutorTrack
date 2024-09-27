@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="form-group">
+    <div class="content-section">
+        <legend class="border-bottom mb-3">Resend Confirmation Email</legend>
+        <form method="POST" action="" name="resendConfirmationForm" id="resendConfirmationForm">
+            {{ form.hidden_tag() }}
+            <div class="form-group mb-3">
+                {{ form.email.label(class="form-control-label") }}
+                {% if form.email.errors %}
+                {{ form.email(class="form-control is-invalid", id="resendEmailInput") }}
+                <div class="invalid-feedback">
+                    {% for error in form.email.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.email(class="form-control", id="resendEmailInput", placeholder="Enter email") }}
+                {% endif %}
+            </div>
+            <div class="form-group mt-3">
+                {{ form.submit(class="btn btn-outline-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="border-top pt-3">
+    <small class="text-muted">
+        Already confirmed your account? <a class="ml-2" href="{{ url_for('users.login') }}">Sign in</a>
+    </small>
+</div>
+
+<script type="text/javascript" src="{{ url_for('users.static', filename='resend_confirmation_form.js') }}"></script>
+
+{% endblock content %}

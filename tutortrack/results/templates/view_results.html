@@ -1,0 +1,106 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<style>
+    .card-text {
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+</style>
+
+<legend class="border-bottom mb-3">Results</legend>
+
+<form method="POST" action="" id="form">
+    {{ form.hidden_tag() }}
+    <div class="row">
+        <div class="col-9">
+            <div class="form-group mb-3">
+                <label for="pageSelect">Select display</label>
+                <select class="form-select form-select-sm" style="width: 250px;" id="displayInput" type="button"
+                    id="pageSelect" onchange="location = this.value;">
+                    <option selected value="">Results</option>
+                    <option value="/results/scatter/graph">Scatter Graph</option>>
+                </select>
+            </div>
+        </div>
+        <div class="col" style="text-align: right;">
+            {% if current_user.type == "tutor" %}
+            <a class="btn btn-outline-primary btn-lg" href="{{ url_for('results.log_result') }}">Log Result</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-5">
+            <div class="form-group mb-3">
+                {{ form.child.label(class="form-select-label") }}
+                {% if form.child.errors %}
+                {{ form.child(class="form-select form-select-sm is-invalid", style="width: 250px;", id="childInput") }}
+                <div class="invalid-feedback">
+                    {% for error in form.child.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.child(class="form-select form-select-sm", style="width: 250px;", id="childInput") }}
+                {% endif %}
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group mb-3">
+                {{ form.topic.label(class="form-select-label") }}
+                {% if form.topic.errors %}
+                {{ form.topic(class="form-select form-select-sm is-invalid", style="width: 250px;", id="topicInput") }}
+                <div class="invalid-feedback">
+                    {% for error in form.topic.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.topic(class="form-select form-select-sm", style="width: 250px;", id="topicInput") }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</form>
+
+<div id="results">
+    {% for result in results %}
+    <div class="card mb-3" id="children">
+        <div class="row">
+            <div class="col-6 m-3">
+                <div class="card-text">
+                    {{ result[7] }}
+                    {{ result[5] }}
+                </div>
+            </div>
+            <div class="col-2 mt-3 mb-3 p-0">
+                <div class="card-text">
+                    {{ result[4][8:] }}/{{ result[4][5:7] }}/{{ result[4][:4] }}
+                </div>
+            </div>
+            <div class="col-1 mt-3 mb-3 p-0">
+                <div class="card-text">
+                    {% if result[6]|last == "0" %}
+                    {{ result[6][:(result[6]|length - 2)] }}%
+                    {% else %}
+                    {{ result[6] }}%
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col m-2">
+                <div class="card-text">
+                    <a class="btn btn-outline-secondary"
+                        href="{{ url_for('results.result_details', childID=result[0], resultID=result[3]) }}">View
+                        Details</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script type="text/javascript" src="{{ url_for('results.static', filename='view_results.js') }}"></script>
+
+{% endblock content %}

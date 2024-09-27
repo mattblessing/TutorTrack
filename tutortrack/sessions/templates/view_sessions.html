@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<style>
+    .card-text {
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+</style>
+
+<legend class="border-bottom mb-3">Sessions</legend>
+
+<div class="row">
+    <div class="col-9">
+        <div class="form-group">
+            <form method="POST" action="" name="childSelect" id="childSelect">
+                {{ form.hidden_tag() }}
+                <div class="form-group mb-3">
+                    {{ form.child.label(class="form-select-label") }}
+                    {% if form.child.errors %}
+                    {{ form.child(class="form-select form-select-sm is-invalid", style="width: 250px;", id="childInput")
+                    }}
+                    <div class="invalid-feedback">
+                        {% for error in form.child.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    {{ form.child(class="form-select form-select-sm", style="width: 250px;", id="childInput") }}
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col" style="text-align: right;">
+        {% if current_user.type == "tutor" %}
+        <a class="btn btn-outline-primary btn-lg" href="{{ url_for('sessions.log_session') }}">Log Session</a>
+        {% endif %}
+    </div>
+</div>
+
+<div id="sessions">
+    {% for session in sessions %}
+    <div class="card mb-3" id="children">
+        <div class="row">
+            <div class="col-5 m-3">
+                <div class="card-text">
+                    {{ session[1] }}
+                    {{ session[2] }}
+                </div>
+            </div>
+            <div class="col-2 mt-3 mb-3 p-0">
+                <div class="card-text">
+                    {{ session[4][8:] }}/{{ session[4][5:7] }}/{{ session[4][:4] }}
+                </div>
+            </div>
+            <div class="col-1 mt-3 mb-3 p-0">
+                <div class="card-text">
+                    {{ session[5][:5] }}
+                </div>
+            </div>
+            <div class="col-1 mt-3 mb-3 p-0">
+                <div class="card-text">
+                    {{ session[6] }}/10
+                </div>
+            </div>
+            <div class="col m-2">
+                <div class="card-text">
+                    <a class="btn btn-outline-secondary"
+                        href="{{ url_for('sessions.session_details', childID=session[0], sessionID=session[3]) }}">View
+                        Details</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script type="text/javascript" src="{{ url_for('sessions.static', filename='view_sessions.js') }}"></script>
+
+{% endblock content %}

@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="form-group">
+    <div class="content-section">
+        <div class="row">
+            <div class="col-10">
+                <legend class="border-bottom mb-3">Add Child</legend>
+            </div>
+            <div class="col">
+                <a class="btn btn-outline-secondary" href="{{ url_for('account.account_details')}}"
+                    style="width: 90px;">Back</a>
+            </div>
+        </div>
+        <form method="POST" action="" name="addform" id="addform">
+            {{ form.hidden_tag() }}
+            <div class="form-group mb-3">
+                {{ form.childFirstname.label(class="form-control-label") }}
+                {% if form.childFirstname.errors %}
+                {{ form.childFirstname(class="form-control is-invalid", id="childFirstnameInput",
+                placeholder="First name") }}
+                <div class="invalid-feedback">
+                    {% for error in form.childFirstname.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.childFirstname(class="form-control", id="childFirstnameInput", placeholder="First name") }}
+                {% endif %}
+            </div>
+            <div class="form-group mb-3">
+                {{ form.childSurname.label(class="form-control-label") }}
+                {% if form.childSurname.errors %}
+                {{ form.childSurname(class="form-control is-invalid", id="childSurnameInput", placeholder="Surname") }}
+                <div class="invalid-feedback">
+                    {% for error in form.childSurname.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.childSurname(class="form-control", id="childSurnameInput", placeholder="Surname") }}
+                {% endif %}
+            </div>
+            <div class="form-group mb-3">
+                {{ form.submit(class="btn btn-outline-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript" src="{{ url_for('account.static', filename='add_child_form.js') }}"></script>
+
+{% endblock content %}

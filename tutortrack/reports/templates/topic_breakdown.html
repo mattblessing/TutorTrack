@@ -1,0 +1,29 @@
+<div class="card mb-3">
+    <h4 class="card-title mb-4 mt-3 mx-4">Topic Breakdown</h4>
+    {% for mean in meanScores %}
+    <div class="row mb-2">
+        <div class="col-5">
+            <div class="card-text mx-4">
+                {% if '\xa0' in mean[0] %}
+                {{ mean[0] }}
+                {% else %}
+                <strong>{{ mean[0] }}</strong>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col">
+            <div class="card-text" style="font-size: 12px;">
+                Mean Score: {{ mean[1] }}%, Number of Results Logged: {{ mean[2] }}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    <h4 class="card-title mb-4 mt-3 mx-4">Revision List</h4>
+    <div class="row mb-2">
+        {% for topic in revisionList %}
+        <div class="card-text mx-5">
+            {{ topic[0] }}
+        </div>
+        {% endfor %}
+    </div>
+</div>

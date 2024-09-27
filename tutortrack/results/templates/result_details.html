@@ -1,0 +1,107 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+{% if current_user.type == "tutor" %}
+<div class="modal fade" id="deleteConfirm" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmLabel">Delete Result</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this result? Any linked parent accounts will be unable to view this
+                result.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a class="btn btn-danger"
+                    href="{{ url_for('results.delete_result', childID=result[6], resultID=result[0]) }}">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-10">
+        <legend class="border-bottom mb-3">Results</legend>
+    </div>
+    <div class="col">
+        <a class="btn btn-outline-secondary" href="{{ url_for('results.view_results')}}" style="width: 100px;">Back</a>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-5 m-2">
+                <h4 class="card-title mb-4">{{ child[2]}} {{ child[3] }}</h4>
+            </div>
+            {% if current_user.type == "tutor" %}
+            <div class="col">
+                <a class="btn btn-outline-secondary btn-lg"
+                    href="{{ url_for('results.change_result_details', childID=result[6], resultID=result[0]) }}">Change
+                    Details</a>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-outline-danger btn-lg" data-bs-toggle="modal"
+                    data-bs-target="#deleteConfirm">Delete Result</button>
+            </div>
+            {% endif %}
+        </div>
+        <div class="card-text">
+            <div class="row">
+                <div class="col-3">
+                    <p>Topic:</p>
+                </div>
+                <div class="col">
+                    <p>{{ topic[0][0] }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3">
+                    <p>Date completed:</p>
+                </div>
+                <div class="col">
+                    <p>{{ result[1][8:] }}/{{ result[1][5:7] }}/{{ result[1][:4] }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3">
+                    <p>Type of work:</p>
+                </div>
+                <div class="col">
+                    <p>{{ result[2] }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3">
+                    <p>Student mark:</p>
+                </div>
+                <div class="col">
+                    <p>{{ result[3] }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3">
+                    <p>Total mark:</p>
+                </div>
+                <div class="col">
+                    <p>{{ result[4] }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3">
+                    <p>Percentage:</p>
+                </div>
+                <div class="col">
+                    <p>{{ result[5] }}%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

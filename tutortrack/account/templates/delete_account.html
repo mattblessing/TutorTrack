@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="form-group">
+    <div class="content-section">
+        <div class="row">
+            <div class="col-9">
+                <legend class="border-bottom mb-3">Delete Account</legend>
+            </div>
+            <div class="col">
+                <div class="col">
+                    <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('account.account_details')}}"
+                        style="width: 150px;">Back</a> <!-- added back button -->
+                </div>
+            </div>
+        </div>
+        <form method="POST" action="" name="tutorAccountForm" id="tutorAccountForm">
+            {{ form.hidden_tag() }}
+            <div class="form-group m-3 mb-4">
+                {% if current_user.type == "tutor" %}
+                <h5>Deleting your account is an irreversible decision. You will lose all data linked to this account and
+                    any parent accounts linked to this account will be deleted. If you are sure you want to delete your
+                    account, press the button below. Otherwise, you can leave this page using the back button.</h5>
+                {% elif current_user.type == "parent" %}
+                <h5>Deleting your account is an irreversible decision. You will lose all data linked to this account and
+                    the tutor this account is linked to will also lose all data stored about you and your child. If you
+                    are sure you want to delete your account, press the button below. Otherwise, you can leave this page
+                    using the back button.</h5>
+                {% endif %}
+            </div>
+            <div class="form-group mb-3" style="text-align: center;">
+                {{ form.submit(class="btn btn-danger btn-lg") }}
+            </div>
+    </div>
+    </form>
+</div>
+</div>
+
+{% endblock content %}

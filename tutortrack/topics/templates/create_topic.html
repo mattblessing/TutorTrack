@@ -1,0 +1,77 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="form-group">
+    <div class="content-section">
+        <div class="row">
+            <div class="col-10">
+                <legend class="border-bottom mb-3">Create Topic</legend>
+            </div>
+            <div class="col">
+                <a class="btn btn-outline-secondary btn-lg" style="width: 90px;"
+                    href="{{ url_for('topics.view_topics') }}">Back</a>
+            </div>
+        </div>
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <div class="form-group mb-3">
+                {{ form.child.label(class="form-select-label") }}
+                {% if form.child.errors %}
+                {{ form.child(class="form-select form-select-sm is-invalid", style="width: 50%;", id="childInput") }}
+                <div class="invalid-feedback">
+                    {% for error in form.child.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.child(class="form-select form-select-sm", style="width: 50%;", id="childInput") }}
+                {% endif %}
+            </div>
+            <div class="form-group mb-3">
+                {{ form.name.label(class="form-control-label") }}
+                {% if form.name.errors %}
+                {{ form.name(class="form-control is-invalid", style="width: 50%;", id="nameInput",
+                placeholder="Enter topic name") }}
+                <div class="invalid-feedback">
+                    {% for error in form.name.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.name(class="form-control", style="width: 50%;", id="nameInput", placeholder="Enter topic name")
+                }}
+                {% endif %}
+            </div>
+            <div class="form-group mb-3" id="type">
+                {% for type in form.type %}
+                <div class="form-check-inline">
+                    {{ type.label(class="form-check-label") }}
+                    {{ type(class="form-check-input", type="radio") }}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="form-group mb-3" id="parentTopic">
+                {{ form.parentTopic.label(class="form-select-label") }}
+                {% if form.parentTopic.errors %}
+                {{ form.parentTopic(class="form-select form-select-sm is-invalid", style="width: 50%;",
+                id="parentTopicInput") }}
+                <div class="invalid-feedback">
+                    {% for error in form.parentTopic.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.parentTopic(class="form-select form-select-sm", style="width: 50%;", id="parentTopicInput") }}
+                {% endif %}
+            </div>
+            <div class="form-group mb-3">
+                {{ form.submit(class="btn btn-outline-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript" src="{{ url_for('topics.static', filename='create_topic_form.js') }}"></script>
+
+{% endblock content %}

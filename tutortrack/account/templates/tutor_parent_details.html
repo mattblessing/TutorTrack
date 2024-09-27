@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="dropdown">
+    <button class="btn btn-outline-secondary dropdown-toggle mb-3" type="button" id="pageSelect"
+        data-bs-toggle="dropdown" aria-expanded="false">Parent Accounts</button>
+    <ul class="dropdown-menu" aria-labelledby="pageSelect">
+        <li><a class="dropdown-item" href="/account">Account Details</a></li>
+        <li><button class="dropdown-item" href="" role="button">Parent Accounts</button></li>
+    </ul>
+</div>
+
+<div class="row">
+    <div class="col-10">
+        <legend class="border-bottom mb-3">Parent Accounts</legend>
+    </div>
+    <div class="col">
+        <a class="btn btn-outline-secondary" href="{{ url_for('account.parent_accounts')}}"
+            style="width: 100px;">Back</a>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h4 class="card-title mb-4">{{ parent[0]}} {{ parent[1] }}</h4>
+        <div class="card-text">
+            <div class="row">
+                <div class="col-2">
+                    <p>Email:</p>
+                </div>
+                <div class="col">
+                    <p>{{ parent[2] }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-2">
+                    <p>Children:</p>
+                </div>
+                <div class="col">
+                    {% for child in children %}
+                    {{ child[0] }}
+                    {{ child[1] }}
+                    <br>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

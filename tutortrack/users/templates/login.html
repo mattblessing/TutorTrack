@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="form-group">
+    <div class="content-section">
+        <legend class="border-bottom mb-3">Log In</legend>
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <div class="form-group mb-3">
+                    {{ form.email.label(class="form-control-label") }}
+                    {% if form.email.errors %}
+                    {{ form.email(class="form-control is-invalid", id="emailInput") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.email.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    {{ form.email(class="form-control", id="emailInput", placeholder="Enter email") }}
+                    {% endif %}
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.password.label(class="form-control-label") }}
+                    {% if form.password.errors %}
+                    {{ form.password(class="form-control is-invalid", id="passwordInput") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.password.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    {{ form.password(class="form-control", id="passwordInput", placeholder="Enter password") }}
+                    {% endif %}
+                </div>
+                <div class="form-check mb-3">
+                    {{ form.remember.label(class="form-check-label") }}
+                    {{ form.remember(class="form-check-input", id="rememberMeInput") }}
+                </div>
+            </fieldset>
+            <div class="form-group mb-3">
+                {{ form.submit(class="btn btn-outline-primary") }}
+            </div>
+            <small class="text-muted ml-2">
+                <a href="{{ url_for('users.request_reset') }}">Forgot password?</a>
+            </small>
+        </form>
+    </div>
+</div>
+<div class="form-group row mt-3 mb-3">
+    <div class="form-group col-md-6">
+        <div class="border-top pt-3">
+            <small class="text-muted">
+                Don't have an account? <a class="ml-2" href="{{ url_for('users.tutor_register') }}">Sign up</a>
+            </small>
+        </div>
+    </div>
+    <div class="form-group col-md-6">
+        <div class="border-top pt-3">
+            <small class="text-muted">
+                Confirmation link invalid or expired? <a class="ml-2"
+                    href="{{ url_for('users.resend_confirm') }}">Resend link</a>
+            </small>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="{{ url_for('users.static', filename='login_form.js') }}"></script>
+
+{% endblock content %}

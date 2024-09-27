@@ -1,0 +1,170 @@
+{% extends "layout.html" %}
+
+{% block report %}
+
+<style>
+    .col-1-5 {
+        position: relative;
+        min-height: 1px;
+        padding-right: 15px;
+        padding-left: 15px;
+    }
+
+    @media (min-width: 992px) {
+        .col-1-5 {
+            float: left;
+        }
+
+        .col-1-5 {
+            width: 12.5%;
+        }
+    }
+
+    .card-text {
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0-rc.1/Chart.bundle.js"></script>
+
+<div id="reportSent"></div>
+
+<legend id="reportName" class="border-bottom mb-3">{{ childName }} - Report</legend>
+
+<form method="POST" action="" id="form">
+    {{ form.hidden_tag() }}
+    <div class="row">
+        <div class="col-4">
+            <div class="form-group">
+                {{ form.child.label(class="form-select-label") }}
+                {% if form.child.errors %}
+                {{ form.child(class="form-select form-select-sm is-invalid", style="width: 250px;", id="childInput") }}
+                <div class="invalid-feedback">
+                    {% for error in form.child.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.child(class="form-select form-select-sm", style="width: 250px;", id="childInput") }}
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-1-5">
+            <div class="form-group">
+                {{ form.startDate.label(class="form-control-label") }}
+                {% if form.startDate.errors %}
+                {{ form.startDate(class="form-control form-control-sm is-invalid", style="width: 120px;",
+                id="startDateInput") }}
+                <div class="invalid-feedback">
+                    {% for error in form.startDate.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.startDate(class="form-control form-control-sm", style="width: 120px;", id="startDateInput") }}
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-1-5">
+            <div class="form-group">
+                {{ form.endDate.label(class="form-control-label") }}
+                {% if form.endDate.errors %}
+                {{ form.endDate(class="form-control form-control-sm is-invalid", style="width: 120px;",
+                id="endDateInput") }}
+                <div class="invalid-feedback">
+                    {% for error in form.endDate.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.endDate(class="form-control form-control-sm", style="width: 120px;", id="endDateInput") }}
+                {% endif %}
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <br>
+                {{ form.submit(class="btn btn-outline-secondary btn-sm", id="submit", type="button") }}
+            </div>
+        </div>
+        <div class="col" style="text-align: right;">
+            {% if current_user.type == "tutor" %}
+            <a class="btn btn-outline-primary btn-lg" id="sendReport">Send Report</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-4">
+        </div>
+        <div class="col">
+            <small id="dateError" class="form-text text-danger"></small>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div id="topicBreakdown">
+                <div class="card mb-3">
+                    <h4 class="card-title mb-4 mt-3 mx-4">Topic Breakdown</h4>
+                    {% for mean in meanScores %}
+                    <div class="row mb-2">
+                        <div class="col-5">
+                            <div class="card-text mx-4">
+                                {% if '\xa0' in mean[0] %}
+                                {{ mean[0] }}
+                                {% else %}
+                                <strong>{{ mean[0] }}</strong>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card-text" style="font-size: 12px;">
+                                Mean Score: {{ mean[1] }}%, Number of Results Logged: {{ mean[2] }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <h4 class="card-title mb-4 mt-3 mx-4">Revision List</h4>
+                    <div class="row mb-2">
+                        {% for topic in revisionList %}
+                        <div class="card-text mx-5">
+                            {{ topic[0] }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div id="histogram" style="float: right;">
+                <div class="form-group mb-3">
+                    {{ form.topic.label(class="form-select-label") }}
+                    {% if form.topic.errors %}
+                    {{ form.topic(class="form-select form-select-sm is-invalid", style="width: 250px;", id="topicInput")
+                    }}
+                    <div class="invalid-feedback">
+                        {% for error in form.topic.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    {{ form.topic(class="form-select form-select-sm", style="width: 250px;", id="topicInput") }}
+                    {% endif %}
+                </div>
+                <div style="width: 500px; height: 270px;">
+                    <canvas id="myChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var data = {{ histogramData| safe }};
+</script>
+
+<script type="text/javascript" src="{{ url_for('reports.static', filename='reports_form.js') }}"></script>
+
+{% endblock report %}

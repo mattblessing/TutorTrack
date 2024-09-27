@@ -1,0 +1,87 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0-rc.1/Chart.bundle.js"></script>
+
+<legend class="border-bottom mb-3">Results</legend>
+
+<form method="POST" action="" id="form">
+    {{ form.hidden_tag() }}
+    <div class="row">
+        <div class="col-9">
+            <div class="form-group mb-3">
+                <label for="pageSelect">Select display</label>
+                <select class="form-select form-select-sm" style="width: 250px;" id="displayInput" type="button"
+                    id="pageSelect" onchange="location = this.value;">
+                    <option value="/view/results">Results</option>
+                    <option selected value="">Scatter Graph</option>>
+                </select>
+            </div>
+        </div>
+        <div class="col" style="text-align: right;">
+            {% if current_user.type == "tutor" %}
+            <a class="btn btn-outline-primary btn-lg" href="{{ url_for('results.log_result') }}">Log Result</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-5">
+            <div class="form-group mb-3">
+                {{ form.child.label(class="form-select-label") }}
+                {% if form.child.errors %}
+                {{ form.child(class="form-select form-select-sm is-invalid", style="width: 250px;", id="childInput") }}
+                <div class="invalid-feedback">
+                    {% for error in form.child.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.child(class="form-select form-select-sm", style="width: 250px;", id="childInput") }}
+                {% endif %}
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group mb-3">
+                {{ form.topic.label(class="form-select-label") }}
+                {% if form.topic.errors %}
+                {{ form.topic(class="form-select form-select-sm is-invalid", style="width: 250px;", id="topicInput") }}
+                <div class="invalid-feedback">
+                    {% for error in form.topic.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.topic(class="form-select form-select-sm", style="width: 250px;", id="topicInput") }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</form>
+
+<button type="button" id="toggleLine" class="btn btn-outline-secondary btn-sm mb-3" style="width: 120px;">Line of best
+    fit</button>
+
+<canvas id="myChart"></canvas>
+<p class="m-5" id="notEnoughResults" style="text-align: center;"></p>
+
+<script>
+    var ctx = document.getElementById("myChart").getContext("2d");
+    var results = {{ results| tojson }};
+    var labels = [];
+    var data = [];
+    for (i = 0; i < results.length; i++) {
+        labels.push(i + 1);
+        data.push({ x: i + 1, y: results[i][6] })
+    }
+    var a = {{ a| safe }};
+    var b = {{ b| safe }};
+    var y1 = a + b * 1;
+    var y2 = a + b * (results.length); // Getting y value for regression line for final value of x
+
+    var topicLength = {{ topicLength| safe }};
+</script>
+
+<script type="text/javascript" src="{{ url_for('results.static', filename='scatter_graph.js') }}"></script>
+
+{% endblock content %}

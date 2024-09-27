@@ -1,0 +1,101 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="dropdown">
+    <button class="btn btn-outline-secondary dropdown-toggle mb-3" type="button" id="pageSelect"
+        data-bs-toggle="dropdown" aria-expanded="false">Account Details</button>
+    <ul class="dropdown-menu" aria-labelledby="pageSelect">
+        <li><button class="dropdown-item" href="" role="button">Account Details</button></li>
+        <li><a class="dropdown-item" href="/parent/accounts">Parent Accounts</a></li>
+    </ul>
+</div>
+
+<div class="modal fade" id="deleteConfirm" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmLabel">Delete Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete your account? All parent accounts and data linked to this account will
+                be permanently deleted.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a class="btn btn-danger" href="{{ url_for('account.delete_account')}}">I am sure!</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="form-group">
+    <div class="content-section">
+        <div class="row">
+            <div class="col-8">
+                <legend class="border-bottom mb-3">Account Details</legend>
+            </div>
+            <div class="col" style="text-align: right;">
+                <button type="button" class="btn btn-outline-danger btn-lg" data-bs-toggle="modal"
+                    data-bs-target="#deleteConfirm">Delete Account</button>
+            </div>
+        </div>
+        <form method="POST" action="" name="tutorAccountForm" id="tutorAccountForm">
+            {{ form.hidden_tag() }}
+            <div class="form-group mt-3 mb-3">
+                {{ form.firstname.label(class="form-control-label") }}
+                {% if form.firstname.errors %}
+                {{ form.firstname(class="form-control is-invalid", id="tutorFirstnameInput") }}
+                <div class="invalid-feedback">
+                    {% for error in form.firstname.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.firstname(class="form-control", id="tutorFirstnameInput", placeholder="Enter first name") }}
+                {% endif %}
+            </div>
+            <div class="form-group mb-3">
+                {{ form.surname.label(class="form-control-label") }}
+                {% if form.surname.errors %}
+                {{ form.surname(class="form-control is-invalid", id="tutorSurnameInput") }}
+                <div class="invalid-feedback">
+                    {% for error in form.surname.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.surname(class="form-control", id="tutorSurnameInput", placeholder="Enter surname") }}
+                {% endif %}
+            </div>
+            <div class="form-group mb-3">
+                {{ form.email.label(class="form-control-label") }}
+                {% if form.email.errors %}
+                {{ form.email(class="form-control is-invalid", id="tutorEmailInput") }}
+                <div class="invalid-feedback">
+                    {% for error in form.email.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.email(class="form-control", id="tutorEmailInput", placeholder="Enter email") }}
+                {% endif %}
+            </div>
+            <div class="form-group mb-3">
+                {{ form.tutorCode.label(class="form-control-label") }}
+                {{ form.tutorCode(readonly=true, class="form-control", id="tutorCode", placeholder="Enter email") }}
+            </div>
+            <div class="form-group row mb-3">
+                <div class="form-group col-md-6">
+                    {{ form.submit(class="btn btn-outline-primary") }}
+                    <a class="btn btn-outline-primary" href="/password/change" role="button">Change Password</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript" src="{{ url_for('account.static', filename='tutor_account.js') }}"></script>
+
+{% endblock content %}

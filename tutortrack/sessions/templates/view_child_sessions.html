@@ -1,0 +1,34 @@
+{% for session in sessions %}
+<div class="card mb-3" id="children">
+    <div class="row">
+        <div class="col m-3">
+            <div class="card-text">
+                {{ session[1] }}
+                {{ session[2] }}
+            </div>
+        </div>
+        <div class="col m-3">
+            <div class="card-text">
+                {{ session[4][8:] }}/{{ session[4][5:7] }}/{{ session[4][:4] }}
+            </div>
+        </div>
+        <div class="col-2 m-3">
+            <div class="card-text">
+                {{ session[5][:5] }}
+            </div>
+        </div>
+        <div class="col-1 m-3">
+            <div class="card-text">
+                {{ session[6] }}/10
+            </div>
+        </div>
+        <div class="col m-2">
+            <div class="card-text">
+                <a class="btn btn-outline-secondary"
+                    href="{{ url_for('sessions.session_details', childID=session[0], sessionID=session[3]) }}">View
+                    Details</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}

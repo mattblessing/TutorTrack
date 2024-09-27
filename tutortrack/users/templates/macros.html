@@ -1,0 +1,40 @@
+{%- macro renderChildForm(childForm, index) %}
+<div id="child-{{ index }}-form" class="{% if index == '_' %}is-hidden{% else %}childForm{% endif %}"
+    data-index="{{ index }}">
+    <div class="form-group" id="child">
+        <label for="child">Child details:</label>
+        <div class="form-group row mt-3 mb-3" id="childInput">
+            <div class="form-group col-md-6">
+                {{ childForm.childFirstname.label(class="form-control-label") }}
+                {% if childForm.childFirstname.errors %}
+                {{ childForm.childFirstname(class="form-control is-invalid", id="childFirstnameInput",
+                placeholder="First name") }}
+                <div class="invalid-feedback">
+                    {% for error in childForm.childFirstname.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ childForm.childFirstname(class="form-control", id="childFirstnameInput", placeholder="First name") }}
+                {% endif %}
+            </div>
+            <div class="form-group col-md-6">
+                {{ childForm.childSurname.label(class="form-control-label") }}
+                {% if childForm.childSurname.errors %}
+                {{ childForm.childSurname(class="form-control is-invalid", id="childSurnameInput",
+                placeholder="Surname") }}
+                <div class="invalid-feedback">
+                    {% for error in childForm.childSurname.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ childForm.childSurname(class="form-control", id="childSurnameInput", placeholder="Surname") }}
+                {% endif %}
+            </div>
+        </div>
+        <button class="btn btn-outline-secondary removeChild" type="button">Remove child</button>
+        <hr />
+    </div>
+</div>
+{%- endmacro %}

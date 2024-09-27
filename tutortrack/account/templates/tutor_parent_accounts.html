@@ -1,0 +1,64 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<script src="https://kit.fontawesome.com/a6a84e4284.js" crossorigin="anonymous"></script>
+
+<div class="dropdown">
+    <button class="btn btn-outline-secondary dropdown-toggle mb-3" type="button" id="pageSelect"
+        data-bs-toggle="dropdown" aria-expanded="false">Parent Accounts</button>
+    <ul class="dropdown-menu" aria-labelledby="pageSelect">
+        <li><a class="dropdown-item" href="/account">Account Details</a></li>
+        <li><button class="dropdown-item" href="" role="button">Parent Accounts</button></li>
+    </ul>
+</div>
+
+<div class="row">
+    <div class="col">
+        <legend class="border-bottom mb-3">Parent Accounts</legend>
+    </div>
+    <div class="col">
+        <div class="form-group">
+            <form method="POST" action="" name="searchBar" id="searchBar">
+                {{ form.hidden_tag() }}
+                <div class="input-group">
+                    {{ form.search(class="form-control", id="searchInput", placeholder="Search", aria_label="Search",
+                    aria_describedby="searchButton", style="box-shadow: none;") }}
+                    <button id="searchButton" class="btn btn-secondary" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="parents">
+    {% for parent in parents %}
+    <div class="card mb-3" id="children">
+        <div class="row">
+            <div class="col m-3">
+                <div class="card-text">
+                    {{ parent[1] }}
+                    {{ parent[2] }}
+                </div>
+            </div>
+            <div class="col m-3">
+                <div class="card-text">
+                    {{ parent[3] }}
+                </div>
+            </div>
+            <div class="col m-2" style="text-align: right;">
+                <div class="card-text">
+                    <a class="btn btn-outline-secondary btn"
+                        href="{{ url_for('account.parent_details', parentID=parent[0])}}">View Details</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script type="text/javascript" src="{{ url_for('account.static', filename='tutor_parent_accounts.js') }}"></script>
+
+{% endblock content %}

@@ -1,0 +1,33 @@
+{% for result in results %}
+<div class="card mb-3" id="children">
+    <div class="row">
+        <div class="col-6 m-3">
+            <div class="card-text">
+                {{ result[7] }}
+                {{ result[5] }}
+            </div>
+        </div>
+        <div class="col-2 mt-3 mb-3 p-0">
+            <div class="card-text">
+                {{ result[4][8:] }}/{{ result[4][5:7] }}/{{ result[4][:4] }}
+            </div>
+        </div>
+        <div class="col-1 mt-3 mb-3 p-0">
+            <div class="card-text">
+                {% if result[6]|last == "0" %}
+                {{ result[6][:(result[6]|length - 2)] }}%
+                {% else %}
+                {{ result[6] }}%
+                {% endif %}
+            </div>
+        </div>
+        <div class="col m-2">
+            <div class="card-text">
+                <a class="btn btn-outline-secondary"
+                    href="{{ url_for('results.result_details', childID=result[0], resultID=result[3]) }}">View
+                    Details</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}

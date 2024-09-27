@@ -1,0 +1,23 @@
+{% for parent in parents %}
+<div class="card mb-3" id="children">
+    <div class="row">
+        <div class="col m-3">
+            <div class="card-text">
+                {{ parent[1] }}
+                {{ parent[2] }}
+            </div>
+        </div>
+        <div class="col m-3">
+            <div class="card-text">
+                {{ parent[3] }}
+            </div>
+        </div>
+        <div class="col m-2" style="text-align: right;">
+            <div class="card-text">
+                <a class="btn btn-outline-secondary btn"
+                    href="{{ url_for('account.parent_details', parentID=parent[0])}}">View Details</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}

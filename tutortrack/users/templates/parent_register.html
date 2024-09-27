@@ -1,0 +1,146 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+{% import "macros.html" as macros %}
+
+<style>
+    .is-hidden {
+        display: none;
+    }
+</style>
+
+<div class="form-group">
+    <div class="content-section">
+        <legend class="border-bottom mb-3">Create Account</legend>
+        <div class="form-group">
+            <div class="btn-group">
+                <a href="/tutor/register" class="btn btn-outline-primary">Tutor</a>
+                <a href="#" class="btn btn-outline-primary active" aria-current="page">Parent</a>
+            </div>
+        </div>
+        <form method="POST" action="" name="parentRegistrationForm" id="parentRegistrationForm">
+            {{ form.hidden_tag() }}
+            <div class="form-group mt-3 mb-3">
+                {{ form.firstname.label(class="form-control-label") }}
+                {% if form.firstname.errors %}
+                {{ form.firstname(class="form-control is-invalid", id="parentFirstnameInput") }}
+                <div class="invalid-feedback">
+                    {% for error in form.firstname.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.firstname(class="form-control", id="parentFirstnameInput", placeholder="Enter first name") }}
+                {% endif %}
+            </div>
+            <div class="form-group mb-3">
+                {{ form.surname.label(class="form-control-label") }}
+                {% if form.surname.errors %}
+                {{ form.surname(class="form-control is-invalid", id="parentSurnameInput") }}
+                <div class="invalid-feedback">
+                    {% for error in form.surname.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.surname(class="form-control", id="parentSurnameInput", placeholder="Enter surname") }}
+                {% endif %}
+            </div>
+            <div class="form-group mb-3">
+                {{ form.email.label(class="form-control-label") }}
+                {% if form.email.errors %}
+                {{ form.email(class="form-control is-invalid", id="parentEmailInput") }}
+                <div class="invalid-feedback">
+                    {% for error in form.email.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.email(class="form-control", id="parentEmailInput", placeholder="Enter email") }}
+                {% endif %}
+            </div>
+            <div class="form-group mb-3">
+                {{ form.password.label(class="form-control-label") }}
+                {% if form.password.errors %}
+                {{ form.password(class="form-control is-invalid", id="parentPasswordInput") }}
+                <div class="invalid-feedback">
+                    {% for error in form.password.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.password(class="form-control", id="parentPasswordInput", aria_describedby="passwordHelp",
+                placeholder="Must be at least 8 characters and contain a capital letter") }}
+                {% endif %}
+            </div>
+            <div class="form-group mb-3">
+                {{ form.confirmPassword.label(class="form-control-label") }}
+                {% if form.confirmPassword.errors %}
+                {{ form.confirmPassword(class="form-control is-invalid", id="parentConfirmPasswordInput") }}
+                <div class="invalid-feedback">
+                    {% for error in form.confirmPassword.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.confirmPassword(class="form-control", id="parentConfirmPasswordInput",
+                placeholder="Retype password") }}
+                {% endif %}
+            </div>
+            <div class="form-group mb-3">
+                {{ form.tutorCode.label(class="form-control-label") }}
+                {% if form.tutorCode.errors %}
+                {{ form.tutorCode(class="form-control is-invalid", id="tutorCodeInput") }}
+                <div class="invalid-feedback">
+                    {% for error in form.tutorCode.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.tutorCode(class="form-control", id="tutorCodeInput", placeholder="Enter 6-digit tutor code") }}
+                {% endif %}
+            </div>
+
+            <button id="addChild" class="btn btn-outline-secondary" type="button">Add child</button>
+            <hr />
+            <div id="childForms-container">
+                {% for childForm in form.children %}
+                {{ macros.renderChildForm(childForm, loop.index0) }}
+                {% endfor %}
+            </div>
+
+            <div class="form-group mt-3">
+                {{ form.submit(class="btn btn-outline-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+
+{{ macros.renderChildForm(_template, "_") }}
+
+<div class="form-group row mt-3 mb-3">
+    <div class="form-group col-md-6">
+        <div class="border-top pt-3">
+            <small class="text-muted">
+                Already have an account? <a class="ml-2" href="{{ url_for('users.login') }}">Sign in</a>
+            </small>
+        </div>
+    </div>
+    <div class="form-group col-md-6">
+        <div class="border-top pt-3">
+            <small class="text-muted">
+                Confirmation link invalid or expired? <a class="ml-2"
+                    href="{{ url_for('users.resend_confirm') }}">Resend link</a>
+            </small>
+        </div>
+    </div>
+</div>
+
+<footer> <!-- added to make page not end just below the above link -->
+    <p>&nbsp;</p>
+</footer>
+
+<script type="text/javascript" src="{{ url_for('users.static', filename='parent_registration_form.js') }}"></script>
+
+{% endblock content %}

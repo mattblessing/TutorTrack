@@ -1,0 +1,126 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="row row-cols-1 row-cols-md-2 g-4">
+	<div class="col">
+		<div class="card h-100" id="sessions">
+			<h4 class="card-title m-3 mb-2">Sessions</h4>
+			{% if current_user.type == "tutor" %}
+			{% for task in sessions["tutors"] %}
+			<div class="row m-1">
+				<div class="card-text">
+					<a href="{{ task[1] }}">{{ task[0] }}</a>
+				</div>
+			</div>
+			{% endfor %}
+			{% endif %}
+			{% for task in sessions["both"] %}
+			<div class="row m-1">
+				<div class="card-text">
+					<a href="{{ task[1] }}">{{ task[0] }}</a>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+	</div>
+	<div class="col">
+		<div class="card h-100" id="results">
+			<h4 class="card-title m-3 mb-2">Results</h4>
+			{% if current_user.type == "tutor" %}
+			{% for task in results["tutors"] %}
+			<div class="row m-1">
+				<div class="card-text">
+					<a href="{{ task[1] }}">{{ task[0] }}</a>
+				</div>
+			</div>
+			{% endfor %}
+			{% endif %}
+			{% for task in results["both"] %}
+			<div class="row m-1">
+				<div class="card-text">
+					<a href="{{ task[1] }}">{{ task[0] }}</a>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+	</div>
+	{% if current_user.type == "tutor" %}
+	<div class="col">
+		<div class="card h-100" id="topics">
+			<h4 class="card-title m-3 mb-2">Topics</h4>
+			{% for task in topics["tutors"] %}
+			<div class="row m-1">
+				<div class="card-text">
+					<a href="{{ task[1] }}">{{ task[0] }}</a>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+	</div>
+	<div class="col">
+		<div class="card h-100" id="reports">
+			<h4 class="card-title m-3 mb-2">Reports</h4>
+			{% for task in reports["tutors"] %}
+			<div class="row m-1">
+				<div class="card-text">
+					<a href="{{ task[1] }}">{{ task[0] }}</a>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+	</div>
+	{% endif %}
+</div>
+
+{% endblock %}
+
+{% block sidebar %}
+
+<style>
+	.fill {
+		height: 80vh;
+	}
+</style>
+
+{% if current_user.type == "tutor" %}
+<div class="card fill" id="students">
+	<h4 class="card-title m-3 mb-1">Current Students</h4>
+	<div class="card-body overflow-auto">
+		{% for child in children %}
+		<div class="row m-1">
+			<div class="card-text">
+				{{ child[0] }}
+				{{ child[1] }}
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+</div>
+{% elif current_user.type == "parent" %}
+<div class="card fill overflow-auto" id="students">
+	<h4 class="card-title m-3 mb-2">Recent Updates</h4>
+	<div class="card-body overflow-auto">
+		<div class="card-text">
+			<ul class="list-group" id="updates">
+				{% for update in recentUpdates %}
+				{% if update[0] == "SESSION" %}
+				<a href="/session/{{ update[1] }}/{{ update[4] }}" class="list-group-item list-group-item-action">
+					<strong>{{ update[2] }}</strong><br>
+					Session - {{ update[6][:5] }} {{ update[5][8:] }}/{{ update[5][5:7] }}/{{ update[5][:4] }}
+				</a>
+				{% else %}
+				<a href="/result/{{ update[1] }}/{{ update[4] }}" class="list-group-item list-group-item-action">
+					<strong>{{ update[2] }}</strong><br>
+					{{ update[7] }} {{ update[6] }} {{ update[5][8:] }}/{{ update[5][5:7] }}/{{ update[5][:4] }}
+				</a>
+				{% endif %}
+				</a>
+				{% endfor %}
+			</ul>
+		</div>
+	</div>
+</div>
+{% endif %}
+
+{% endblock %}
