@@ -25,8 +25,8 @@ def createTopic(form):
                     "WHERE ChildID=:cID AND TopicID=:tID"
                 ),
                     {"cID": form.child.data, "tID": form.parentTopic.data}
-                ).fetchall()
-                level = parentTopic[0][0] + 1
+                ).fetchall()[0]
+                level = parentTopic[0] + 1
             topics = conn.execute(
                 text("SELECT * FROM Topic WHERE Name=:name"),
                 {"name": form.name.data}
@@ -209,6 +209,8 @@ def updateTopic(form, childID, topicID, level, parentTopicID, topicName):
                     {"tID": topicID, "cID": childID}
                 ).fetchall()
                 if len(numChildren) == 0:
+                    # If selected topic doesn't belong to any other
+                    # children, just change the name of the topic
                     conn.execute(
                         text("UPDATE Topic SET Name=:name WHERE TopicID=:id"),
                         {"name": form.name.data, "id": topicID}
@@ -248,8 +250,10 @@ def updateTopic(form, childID, topicID, level, parentTopicID, topicName):
                             "UPDATE Result SET TopicID=:tID WHERE ResultID=" +
                             ":rID AND ChildID=:cID"
                         ),
-                            {"tID": newTopicID,
-                                "rID": result[0], "cID": childID}
+                            {
+                                "tID": newTopicID, "rID": result[0],
+                                "cID": childID
+                        }
                         )
         flash("The topic details were successfully changed.", "success")
 
@@ -330,7 +334,7 @@ def deleteTopic(childID, topicID):
     """
     with db.engine.connect() as conn:
         with conn.begin():
-            numChildren = conn.execute(text(
+            children = conn.execute(text(
                 "SELECT ChildID " +
                 "FROM ChildTopic " +
                 "WHERE TopicID=:tID AND ChildID!=:cID"
@@ -343,7 +347,7 @@ def deleteTopic(childID, topicID):
                 {"tID": topicID, "cID": childID}
             ).fetchall()
 
-            if len(numChildren) == 0:
+            if len(children) == 0:
                 # If no other children are linked to the topic
                 # Automatically deletes ChildTopic and Result records
                 conn.execute(

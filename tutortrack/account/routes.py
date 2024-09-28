@@ -26,17 +26,19 @@ def account_details():
     elif current_user.type == "parent":
         form = ParentAccountForm()
         with db.engine.connect() as conn:
+            # Get parent's children
             children = conn.execute(text(
                 "SELECT * FROM Child WHERE ParentID=:id " +
-                "ORDER BY LOWER(Firstname)"
+                "ORDER BY Surname, Firstname"
             ),
                 {"id": current_user.userID}
             ).fetchall()
 
     if form.validate_on_submit():
-        # If form is validated and submitted
+        # If form is valid and submitted
         with db.engine.connect() as conn:
             with conn.begin():
+                # Update account details
                 conn.execute(text(
                     "UPDATE User SET Firstname=:fn, Surname=:sn, Email=:em " +
                     "WHERE UserID=:id"
@@ -49,7 +51,7 @@ def account_details():
         flash("Your account details have been updated!", "success")
         return redirect(url_for("account.account_details"))
     elif request.method == "GET":
-        # If 'GET' request, then fill the form
+        # Fill the form fields with current info
         form.firstname.data = current_user.firstname
         form.surname.data = current_user.surname
         form.email.data = current_user.email
@@ -72,30 +74,28 @@ def account_details():
 def delete_account():
     form = DeleteAccountForm()
     if form.validate_on_submit():
-        # If form is validated and submitted
+        # If form is valid and submitted
         with db.engine.connect() as conn:
             with conn.begin():
                 if current_user.type == "tutor":
-                    parents = conn.execute(
+                    # Get parents linked to tutor
+                    parentIDs = conn.execute(
                         text("SELECT ParentID FROM Parent WHERE TutorID=:id"),
                         {"id": current_user.userID}
                     ).fetchall()
 
                     # Delete all parent records linked to tutor
-                    for parent in parents:
+                    # (Will delete the child records automatically)
+                    for parentID in parentIDs:
                         conn.execute(
                             text("DELETE FROM User WHERE UserID=:id"),
-                            {"id": parent[0]}
+                            {"id": parentID[0]}
                         )
-                    conn.execute(
-                        text("DELETE FROM User WHERE UserID=:id"),
-                        {"id": current_user.userID}
-                    )
-                elif current_user.type == "parent":
-                    conn.execute(
-                        text("DELETE FROM User WHERE UserID=:id"),
-                        {"id": current_user.userID}
-                    )
+                # Delete user's account record
+                conn.execute(
+                    text("DELETE FROM User WHERE UserID=:id"),
+                    {"id": current_user.userID}
+                )
 
         # Delete topics and sessions that are now linked to no children
         deleteTopicsAndSessions()
@@ -111,13 +111,14 @@ def delete_account():
 def change_password():
     form = ChangePasswordForm()
     if form.validate_on_submit():
-        # If form is validated and submitted
+        # If form is valid and submitted
         # Encrypt password
         hashedPassword = bcrypt.generate_password_hash(
             form.password.data
         ).decode("utf-8")
         with db.engine.connect() as conn:
             with conn.begin():
+                # Update password
                 conn.execute(
                     text("UPDATE User SET Password=:pw WHERE UserID=:id"),
                     {"pw": hashedPassword, "id": current_user.userID}
@@ -141,26 +142,28 @@ def parent_accounts():
             "SELECT * " +
             "FROM User JOIN Parent ON User.UserID=Parent.ParentID " +
             "WHERE Parent.TutorID=:id AND User.Confirmed=1 " +
-            "ORDER BY Surname"
+            "ORDER BY Surname, Firstname"
         ),
             {"id": current_user.userID}
         ).fetchall()
 
         form = SearchForm()
         if request.method == "POST":
-            # Remove any spaces from the search
+            # Remove any spaces from the user's search
             search = "%" + request.form["search"].replace(" ", "") + "%"
 
+            # Get parents linked to tutor matching the search
             parents = conn.execute(text(
                 "SELECT * " +
                 "FROM User JOIN Parent ON User.UserID=Parent.ParentID " +
                 "WHERE Parent.TutorID=:id AND User.Confirmed=1 AND " +
                 "(Firstname LIKE :search OR Surname LIKE :search OR " +
-                "(Firstname || Surname) LIKE :search) " +
-                "ORDER BY Surname"
+                "(Firstname || Surname) LIKE :search) " +  # || = concatenation
+                "ORDER BY Surname, Firstname"
             ),
                 {"id": current_user.userID, "search": search}
-            ).fetchall()  # || = concatenation
+            ).fetchall()
+
             return render_template(
                 "search_parent_accounts.html", title="Parent Accounts",
                 parents=parents, form=form
@@ -176,6 +179,7 @@ def parent_accounts():
 @login_required(type="tutor")
 def parent_details(parentID):
     with db.engine.connect() as conn:
+        # Get the parent's details
         parent = conn.execute(text(
             "SELECT User.Firstname, User.Surname, User.Email, " +
             "Parent.TutorID " +
@@ -183,13 +187,14 @@ def parent_details(parentID):
             "WHERE UserID=ParentID AND UserID=:id"
         ),
             {"id": parentID}
-        ).fetchall()
+        ).fetchall()[0]
 
-        if current_user.userID != parent[0][3]:
+        # If user is not the parent's tutor, redirect them
+        if current_user.userID != parent[3]:
             flash("You are not permitted to access this page.", "danger")
             return redirect(url_for("other.home"))
 
-        parent = parent[0]
+        # Get parent's children
         children = conn.execute(text(
             "SELECT Firstname, Surname " +
             "FROM Child " +
@@ -214,6 +219,7 @@ def add_child():
         childID = generateChildID()
         with db.engine.connect() as conn:
             with conn.begin():
+                # Add child record
                 conn.execute(
                     text("INSERT INTO Child VALUES (:id, :fn, :sn, :pID)"),
                     {
@@ -237,17 +243,22 @@ def add_child():
 def delete_child(childID):
     parent = False
     with db.engine.connect() as conn:
-        children = conn.execute(
+        # Get child IDs
+        childIDs = conn.execute(
             text("SELECT ChildID FROM Child WHERE ParentID=:id"),
             {"id": current_user.userID}
         ).fetchall()
-    for i in range(len(children)):
-        if str(childID) == str(children[i][0]):
+    # Determine whether user is the child's parent
+    for child in childIDs:
+        if str(childID) == str(child[0]):
             parent = True
+
     if parent == True:
-        if len(children) > 1:
+        if len(childIDs) > 1:
+            # If more than 1 child
             with db.engine.connect() as conn:
                 with conn.begin():
+                    # Delete child
                     conn.execute(
                         text("DELETE FROM Child WHERE ChildID=:id"),
                         {"id": childID}

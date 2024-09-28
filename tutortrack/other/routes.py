@@ -14,16 +14,21 @@ other = Blueprint(
 @other.route("/home")
 @login_required()
 def home():
-    with db.engine.connect() as conn:
-        children = conn.execute(text(
-            "SELECT Child.Firstname, Child.Surname " +
-            "FROM User, Parent, Child " +
-            "WHERE User.UserID=Parent.ParentID AND Parent.ParentID=" +
-            "Child.ParentID AND Parent.TutorID=:id AND User.Confirmed=1 " +
-            "ORDER BY Child.Surname, Child.Firstname"
-        ),
-            {"id": current_user.userID}
-        ).fetchall()
+    if current_user.type == "tutor":
+        with db.engine.connect() as conn:
+            # Get tutor's students
+            children = conn.execute(text(
+                "SELECT Child.Firstname, Child.Surname " +
+                "FROM User, Parent, Child " +
+                "WHERE User.UserID=Parent.ParentID AND Parent.ParentID=" +
+                "Child.ParentID AND Parent.TutorID=:id AND " +
+                "User.Confirmed=1 " +
+                "ORDER BY Child.Surname, Child.Firstname"
+            ),
+                {"id": current_user.userID}
+            ).fetchall()
+    else:
+        children = []
 
     sessions = {
         "tutors": [["Log a session", "/log/session"]],
@@ -46,9 +51,11 @@ def home():
         updates = recentUpdates()
 
         for update in updates:
-            if len(update) == 6:  # Update is a session
+            if len(update) == 6:
+                # Update is a session
                 update.insert(0, "SESSION")
             else:
+                # Update is a result
                 update.insert(0, "RESULT")
     else:
         updates = []

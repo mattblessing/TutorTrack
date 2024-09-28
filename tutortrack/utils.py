@@ -29,7 +29,7 @@ def getChildrenSelectList(allChildren=False):
                 "WHERE User.UserID=Parent.ParentID AND Parent.ParentID=" +
                 "Child.ParentID AND Parent.TutorID=:id AND " +
                 "User.Confirmed=1 " +
-                "ORDER BY LOWER(Child.Firstname)"
+                "ORDER BY Child.Surname, Child.Firstname"
             ),
                 {"id": current_user.userID}
             ).fetchall()
@@ -39,7 +39,7 @@ def getChildrenSelectList(allChildren=False):
                 "SELECT ChildID, Firstname, Surname " +
                 "FROM Child " +
                 "WHERE Child.ParentID=:id " +
-                "ORDER BY LOWER(Firstname)"
+                "ORDER BY Surname, Firstname"
             ),
                 {"id": current_user.userID}
             ).fetchall()

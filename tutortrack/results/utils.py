@@ -24,7 +24,7 @@ def logResult(form):
                     "WHERE Child.ParentID=User.UserID AND Child.ChildID=:id"
                 ),
                     {"id": form.child.data}
-                ).fetchall()
+                ).fetchall()[0]
 
                 percentage = round(
                     (form.studentMark.data / form.totalMark.data) * 100, 1
@@ -62,7 +62,7 @@ def logResult(form):
                     }
                     )
                     email = render_template("emails/result_logged.html")
-                    notificationEmail(parent[0][0], email)
+                    notificationEmail(parent[0], email)
                     flash("The result was successfully logged.", "success")
                 else:
                     # If it does, do not add to database
@@ -102,7 +102,7 @@ def updateResult(form, resultID):
                 "WHERE Child.ParentID=User.UserID AND Child.ChildID=:id"
             ),
                 {"id": form.child.data}
-            ).fetchall()
+            ).fetchall()[0]
             percentage = round(
                 (form.studentMark.data / form.totalMark.data) * 100, 1
             )
@@ -141,7 +141,7 @@ def updateResult(form, resultID):
                 )
                 email = render_template("emails/result_updated.html")
                 # Send notification to parent
-                notificationEmail(parent[0][0], email)
+                notificationEmail(parent[0], email)
                 flash(
                     "The result details were successfully changed.", "success"
                 )

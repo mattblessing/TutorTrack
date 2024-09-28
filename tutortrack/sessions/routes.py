@@ -19,9 +19,10 @@ sessions = Blueprint(
 @sessions.route("/log/session", methods=["GET", "POST"])
 @login_required(type="tutor")
 def log_session():
-    children = getChildrenSelectList()
     form = LogSessionForm()
-    form.child.choices = children  # Set the child select options
+    # Set the child select options
+    children = getChildrenSelectList()
+    form.child.choices = children
     if form.validate_on_submit():
         # If form valid and submitted
         logSession(form)
@@ -35,8 +36,9 @@ def view_sessions():
     with db.engine.connect() as conn:
         form = LogSessionForm()
         if current_user.type == "tutor":
+            # Set the child select options
             children = getChildrenSelectList(True)
-            form.child.choices = children  # Set the child select options
+            form.child.choices = children
 
             sessions = conn.execute(text(
                 "SELECT Child.ChildID, Child.Firstname, Child.Surname, " +
@@ -51,6 +53,7 @@ def view_sessions():
             ),
                 {"id": current_user.userID}
             ).fetchall()
+
             if request.method == "POST":
                 # Selecting all children gives a value of ""
                 if form.child.data != "":
@@ -129,7 +132,7 @@ def delete_session(childID, sessionID):
                 current_user.userID == child[0][1]
             ):
                 # Get number of children that are linked to current session
-                numChildren = conn.execute(text(
+                children = conn.execute(text(
                     "SELECT ChildID " +
                     "FROM ChildSession " +
                     "WHERE SessionID=:sID AND ChildID!=:cID"
@@ -137,7 +140,7 @@ def delete_session(childID, sessionID):
                     {"sID": sessionID, "cID": childID}
                 ).fetchall()
 
-                if len(numChildren) == 0:
+                if len(children) == 0:
                     # Automatically deletes the linked ChildSession
                     conn.execute(
                         text("DELETE FROM Session WHERE SessionID=:id"),
@@ -172,8 +175,8 @@ def session_details(childID, sessionID):
                 "Child.ParentID AND Child.ChildID=:id"
             ),
                 {"id": childID}
-            ).fetchall()
-            if child[0][0] != current_user.userID:
+            ).fetchall()[0]
+            if child[0] != current_user.userID:
                 flash("You are not permitted to access this page.", "danger")
                 return redirect(url_for("other.home"))
         elif current_user.type == "parent":
@@ -184,13 +187,12 @@ def session_details(childID, sessionID):
                 "WHERE Parent.ParentID=Child.ParentID AND Child.ChildID=:id"
             ),
                 {"id": childID}
-            ).fetchall()
-            if child[0][0] != current_user.userID:
+            ).fetchall()[0]
+            if child[0] != current_user.userID:
                 flash("You are not permitted to access this page.", "danger")
                 return redirect(url_for("other.home"))
 
-        child = child[0]
-        sessionDetails = conn.execute(text(
+        session = conn.execute(text(
             "SELECT Session.SessionID, Session.Date, Session.Time, " +
             "Session.Duration, ChildSession.GeneralDescription, " +
             "ChildSession.FocusDescription, ChildSession.Ranking " +
@@ -200,12 +202,12 @@ def session_details(childID, sessionID):
             "AND Session.SessionID=:sID"
         ),
             {"cID": childID, "sID": sessionID}
-        ).fetchall()
-        session = sessionDetails[0]
-        return render_template(
-            "session_details.html", title="Session Details", child=child,
-            session=session
-        )
+        ).fetchall()[0]
+
+    return render_template(
+        "session_details.html", title="Session Details", child=child,
+        session=session
+    )
 
 
 @sessions.route(
@@ -218,25 +220,25 @@ def session_details(childID, sessionID):
 @login_required(type="tutor")
 def change_session_details(childID, sessionID):
     with db.engine.connect() as conn:
-        child = conn.execute(text(
+        tutorParentIDs = conn.execute(text(
             "SELECT Parent.TutorID, Parent.ParentID " +
             "FROM Parent, Child " +
             "WHERE Parent.ParentID=Child.ParentID AND Child.ChildID=:id"
         ),
             {"id": childID}
-        ).fetchall()
+        ).fetchall()[0]
         if (
-            current_user.userID == child[0][0] or
-            current_user.userID == child[0][1]
+            current_user.userID == tutorParentIDs[0] or
+            current_user.userID == tutorParentIDs[1]
         ):
+            # If user is child's tutor or parent
             form = UpdateSessionForm()
             # Get child details
             child = conn.execute(text(
                 "SELECT Firstname, Surname FROM Child WHERE ChildID=:id"
             ),
                 {"id": childID}
-            ).fetchall()
-            child = child[0]
+            ).fetchall()[0]
             # Get session details to display in form
             currentSession = conn.execute(text(
                 "SELECT Session.Date, Session.Time, Session.Duration, " +
@@ -247,7 +249,7 @@ def change_session_details(childID, sessionID):
                 "ChildSession.ChildID=:cID AND ChildSession.SessionID=:sID"
             ),
                 {"cID": childID, "sID": sessionID}
-            ).fetchall()
+            ).fetchall()[0]
             if form.validate_on_submit():
                 # If form valid and submitted
                 update = updateSession(form, childID, sessionID)
@@ -255,15 +257,15 @@ def change_session_details(childID, sessionID):
             elif request.method == "GET":
                 # Display the current session details
                 form.date.data = datetime.datetime.strptime(
-                    currentSession[0][0], "%Y-%m-%d"
+                    currentSession[0], "%Y-%m-%d"
                 )
                 form.time.data = datetime.datetime.strptime(
-                    currentSession[0][1], "%H:%M:%S"
+                    currentSession[1], "%H:%M:%S"
                 )
-                form.duration.data = currentSession[0][2]
-                form.description.data = currentSession[0][3]
-                form.childFocus.data = currentSession[0][4]
-                form.ranking.data = currentSession[0][5]
+                form.duration.data = currentSession[2]
+                form.description.data = currentSession[3]
+                form.childFocus.data = currentSession[4]
+                form.ranking.data = currentSession[5]
             return render_template(
                 "change_session_details.html", title="Change Session Details",
                 child=child, form=form

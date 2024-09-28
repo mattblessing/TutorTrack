@@ -8,30 +8,35 @@ def deleteTopicsAndSessions():
     """
     with db.engine.connect() as conn:
         with conn.begin():
-            topics = conn.execute(
+            # Get all topic IDs
+            topicIDs = conn.execute(
                 text("SELECT TopicID FROM Topic")
             ).fetchall()
-            sessions = conn.execute(
+            # Get all session IDs
+            sessionIDs = conn.execute(
                 text("SELECT SessionID FROM Session")
             ).fetchall()
-            for topic in topics:
-                topicSearch = conn.execute(
+
+            for topicID in topicIDs:
+                childTopics = conn.execute(
                     text("SELECT * FROM ChildTopic WHERE TopicID=:id"),
-                    {"id": topic[0]}
+                    {"id": topicID[0]}
                 ).fetchall()
-                if len(topicSearch) == 0:
+                if len(childTopics) == 0:
+                    # If no children linked to topic, delete
                     conn.execute(
                         text("DELETE FROM Topic WHERE TopicID=:id"),
-                        {"id": topic[0]}
+                        {"id": topicID[0]}
                     )
 
-            for session in sessions:
-                sessionSearch = conn.execute(
+            for sessionID in sessionIDs:
+                childSessions = conn.execute(
                     text("SELECT * FROM ChildSession WHERE SessionID=:id"),
-                    {"id": session[0]}
+                    {"id": sessionID[0]}
                 ).fetchall()
-                if len(sessionSearch) == 0:
+                if len(childSessions) == 0:
+                    # If no children linked to session, delete
                     conn.execute(
                         text("DELETE FROM Session WHERE SessionID=:id"),
-                        {"id": session[0]}
+                        {"id": sessionID[0]}
                     )

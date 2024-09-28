@@ -31,7 +31,7 @@ def login():
 
     form = LoginForm()
     if form.validate_on_submit():
-        # If login form is submitted and valid
+        # If form valid and submitted
         user = User.query.filter_by(email=form.email.data.lower()).first()
         if user.confirmed == 1:
             # If user has confirmed their email address
@@ -69,7 +69,7 @@ def tutor_register():
 
     form = TutorRegistrationForm()
     if form.validate_on_submit():
-        # If login form is submitted and valid
+        # If form valid and submitted
         # Add a tutor record to the database
         tutor = createTutor(form)
         # Send verification email to tutor
@@ -93,7 +93,7 @@ def parent_register():
     form = ParentRegistrationForm()
     childForm = ChildForm(prefix="children-_-")
     if form.validate_on_submit():
-        # If login form is submitted and valid
+        # If form valid and submitted
         # Add parent and child records to the database
         parent = createParentandChildren(form)
         # Send verification email to parent
@@ -157,16 +157,16 @@ def resend_confirm():
 
     form = EmailForm()
     if form.validate_on_submit():
-        # If login form is submitted and valid
+        # If form valid and submitted
         with db.engine.connect() as conn:
             user = conn.execute(
                 text("SELECT * FROM User WHERE Email=:email"),
                 {"email": form.email.data.lower()}
-            ).fetchall()
+            ).fetchall()[0]
 
-        if user[0][5] != 1:
+        if user[5] != 1:
             # Resend verification email
-            verificationEmail(user[0][3])
+            verificationEmail(user[3])
             flash(
                 "We have resent you a confirmation email! Check your inbox " +
                 "and junk folder.",
@@ -195,15 +195,15 @@ def request_reset():
             user = conn.execute(
                 text("SELECT * FROM User WHERE Email=:email"),
                 {"email": form.email.data.lower()}
-            ).fetchall()
+            ).fetchall()[0]
 
-        if user[0][6] == 1:
+        if user[6] == 1:
             # If user has a valid password reset link already
             flash("A valid password reset link already exists.", "danger")
             return redirect(url_for("users.request_reset"))
 
         # Send password reset email
-        resetEmail(user[0][3])
+        resetEmail(user[3])
         with db.engine.connect() as conn:
             with conn.begin():
                 conn.execute(text(
@@ -246,10 +246,10 @@ def reset_password(token):
         ).fetchall()
     if len(user) != 0:
         if user[0][6] == 1:
-            #  If password reset link is valid
+            # If password reset link is valid
             form = ResetForm()
             if form.validate_on_submit():
-                # If password reset form is valid and submitted
+                # If form valid and submitted
                 if bcrypt.check_password_hash(
                     user[0][4], form.password.data
                 ) == False:

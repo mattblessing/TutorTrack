@@ -131,12 +131,15 @@ def createRevisionList(childID, topics, startDate, endDate):
         return []
 
     for topic in topics:
+        # Remove tabs
         topic[0] = topic[0].replace("\xa0", "")
         with db.engine.connect() as conn:
+            # Get topic ID from name
             topicID = conn.execute(
                 text("SELECT TopicID FROM Topic WHERE Name=:n"),
                 {"n": topic[0]}
             ).fetchall()
+            # Get child's results for topic in date range
             results = conn.execute(text(
                 "SELECT * " +
                 "FROM Result " +
@@ -156,17 +159,24 @@ def createRevisionList(childID, topics, startDate, endDate):
                     ).strftime("%Y-%m-%d")
             }
             ).fetchall()
-        subtopics = topicTreeLength(childID, topicID[0][0])
-        if subtopics == 1 or len(results) != 0:
-            # Topics with no subtopics can be added to revision list
-            # Topics with subtopics can only be added to the revision list when they have results logged for them
+
+        topicTreeSize = topicTreeLength(childID, topicID[0][0])
+        if topicTreeSize == 1 or len(results) != 0:
+            # Topics with no subtopics can be added (tree size 1) to
+            # revision list
+            # Topics with subtopics can only be added to the revision
+            # list when they have results logged for them
             if topic[1] < mean or topic[1] < 70:
+                # If topic mean score is less than 70 or the child's
+                # overall mean score
                 revisionList.append(topic)
 
     # Revision list will be limited to 3 topics
     if len(revisionList) > 3:
         # Order revision list topics in order of mean percentage score
-        revisionList = quicksort(revisionList, 0, len(revisionList)-1, "score")
+        revisionList = quicksort(
+            revisionList, 0, len(revisionList)-1, "score"
+        )
         # Keep 3 topics with lowest mean scores
         revisionList = revisionList[:3]
 

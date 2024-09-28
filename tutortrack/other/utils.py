@@ -11,12 +11,14 @@ def getSessions():
     Returns:
         sessionList (list): The list of session records.
     """
-    # Get children for parent
+    # Get list of parent's children
     children = getChildrenSelectList()
 
     sessionList = []
     for child in children:
+        # For each child
         with db.engine.connect() as conn:
+            # Get details of each session for the child
             sessions = conn.execute(text(
                 "SELECT Child.ChildID, Child.Firstname, Child.Surname, " +
                 "Session.SessionID, Session.Date, Session.Time " +
@@ -30,8 +32,7 @@ def getSessions():
                 {"uID": current_user.userID, "cID": child[0]}
             ).fetchall()
 
-        for session in sessions:
-            sessionList.append(session)
+        sessionList += sessions
 
     return sessionList
 
@@ -43,12 +44,14 @@ def getResults():
     Returns:
         resultList (list): The list of result records.
     """
-    # Get children for parent
+    # Get list of parent's children
     children = getChildrenSelectList()
 
     resultList = []
     for child in children:
+        #  For each child
         with db.engine.connect() as conn:
+            # Get details of each result for the child
             results = conn.execute(text(
                 "SELECT Child.ChildID, Child.Firstname, Child.Surname, " +
                 "Result.ResultID, Result.Date, Result.Type, Topic.Name " +
@@ -61,8 +64,7 @@ def getResults():
                 {"uID": current_user.userID, "cID": child[0]}
             ).fetchall()
 
-        for result in results:
-            resultList.append(result)
+        resultList += results
 
     return resultList
 
@@ -75,15 +77,14 @@ def recentUpdates():
     Returns:
         recentUpdates (list): The most recent session/result records.
     """
-    # Get all sessions and results
+    # Get all sessions and results linked to parent
     sessions = getSessions()
     results = getResults()
 
-    # Combine list into a list of "updates" - includes sessions and results
+    # Combine list into a list of "updates"
     updates = sessions + results
 
-    # Convert each tuple to a list so that the quicksort function can
-    # be used
+    # Convert each tuple to a list for quicksort
     updates = [list(row) for row in updates]
     if len(updates) != 0:
         pivot = updates.pop(len(results)//2)

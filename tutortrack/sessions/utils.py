@@ -22,8 +22,9 @@ def logSession(form):
                 "WHERE Child.ParentID=User.UserID AND Child.ChildID=:id"
             ),
                 {"id": form.child.data}
-            ).fetchall()
-            sessions = conn.execute(text(
+            ).fetchall()[0]
+            # Get session matching form details
+            session = conn.execute(text(
                 "SELECT * " +
                 "FROM Session " +
                 "WHERE Date=:date AND Time=:time AND Duration=:duration"
@@ -35,7 +36,7 @@ def logSession(form):
             }
             ).fetchall()
 
-            if len(sessions) == 0:
+            if len(session) == 0:
                 # If a session does not exist with the entered details,
                 # create a new record
                 sessionID = generateSessionID()
@@ -50,14 +51,14 @@ def logSession(form):
                 }
                 )
             else:
-                sessionID = sessions[0][0]
-            childSessions = conn.execute(text(
+                sessionID = session[0][0]
+            childSession = conn.execute(text(
                 "SELECT * FROM ChildSession WHERE ChildID=:cID AND " +
                 "SessionID=:sID"
             ),
                 {"cID": form.child.data, "sID": sessionID}
             ).fetchall()
-            if len(childSessions) == 0:
+            if len(childSession) == 0:
                 # If a child-session record does not already exist for the
                 # childID and sessionID
                 conn.execute(text(
@@ -72,7 +73,7 @@ def logSession(form):
                 }
                 )
                 email = render_template("emails/session_logged.html")
-                notificationEmail(parent[0][0], email)
+                notificationEmail(parent[0], email)
                 flash("The session was successfully logged.", "success")
             else:
                 # Display error message with link
@@ -80,7 +81,7 @@ def logSession(form):
                     Markup(
                         "That session has already been logged. You can " +
                         'change its details <a href="/change/session/' +
-                        f'details/{form.child.data}/{childSessions[0][1]}"' +
+                        f'details/{form.child.data}/{childSession[0][1]}"' +
                         ">here</a>"
                     ),
                     "info"
@@ -122,7 +123,7 @@ def updateSession(form, childID, sessionID):
                 "WHERE Child.ParentID=User.UserID AND Child.ChildID=:id"
             ),
                 {"id": childID}
-            ).fetchall()
+            ).fetchall()[0]
             # Get children that belong to session that matches form data
             sessions = conn.execute(text(
                 "SELECT Session.SessionID, Child.ChildID " +
@@ -174,14 +175,14 @@ def updateSession(form, childID, sessionID):
                     }
                     )
                 else:
-                    numChildren = conn.execute(text(
+                    children = conn.execute(text(
                         "SELECT ChildID " +
                         "FROM ChildSession " +
                         "WHERE SessionID=:sID AND ChildID!=:cID"
                     ),
                         {"sID": sessionID, "cID": childID}
                     ).fetchall()
-                    if len(numChildren) == 0:
+                    if len(children) == 0:
                         # If selected session doesn't have any other children
                         # Delete session
                         conn.execute(
@@ -209,14 +210,14 @@ def updateSession(form, childID, sessionID):
                     )
             # If a new session needs to be created
             else:
-                numChildren = conn.execute(text(
+                children = conn.execute(text(
                     "SELECT ChildID " +
                     "FROM ChildSession " +
                     "WHERE SessionID=:sID AND ChildID!=:cID"
                 ),
                     {"sID": sessionID, "cID": childID}
                 ).fetchall()
-                if len(numChildren) == 0:
+                if len(children) == 0:
                     # If selected session doesn't have any other children
                     # Delete session
                     conn.execute(
@@ -254,7 +255,7 @@ def updateSession(form, childID, sessionID):
                 )
         email = render_template("emails/session_updated.html")
         # Send parent notification
-        notificationEmail(parent[0][0], email)
+        notificationEmail(parent[0], email)
         flash("The session details were successfully changed.", "success")
 
         return redirect(url_for("sessions.view_sessions"))

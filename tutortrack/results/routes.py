@@ -22,20 +22,25 @@ results = Blueprint(
 @results.route("/log/result", methods=["GET", "POST"])
 @login_required(type="tutor")
 def log_result():
-    children = getChildrenSelectList()
     form = LogResultForm()
-    form.child.choices = children  # Set the child select options
+    # Set the child select options
+    children = getChildrenSelectList()
+    form.child.choices = children
     if len(children) != 0:
         topicList = getTopicSelectList(children[0][0])
     else:
         topicList = []
-    form.topic.choices = topicList  # Set the topic select options
+    # Set the topic select options
+    form.topic.choices = topicList
+
     if form.validate_on_submit():
+        # If form valid and submitted
         logResult(form)
         return redirect(url_for("results.view_results"))
     else:
         if request.method == "POST" and "ajax" in request.form:
-            # If child selection is changed, update topic list
+            # If child selection is changed, update topic select
+            # options
             topicList = getTopicSelectList(request.form["child"])
             if len(topicList) != 0:
                 # Return topic list if there are topics
@@ -50,9 +55,10 @@ def log_result():
 @results.route("/view/results", methods=["GET", "POST"])
 @login_required()
 def view_results():
-    children = getChildrenSelectList()
     form = LogResultForm()
-    form.child.choices = children  # Set the child select options
+    # Set the child select options
+    children = getChildrenSelectList()
+    form.child.choices = children
     if len(children) != 0:
         if current_user.type == "tutor":
             # Get all results for default child selection
@@ -64,41 +70,45 @@ def view_results():
     else:
         results = []
         topicList = []
-    form.topic.choices = topicList  # Set the topic select options
-    if request.method == "POST" and "childChange" in request.form:
-        # If child selection is changed, get results for particular
-        # child only
-        if current_user.type == "tutor":
-            results = tutorGetResults(request.form["child"], "0", None, None)
-        elif current_user.type == "parent":
-            results = parentGetResults(request.form["child"], "0", None, None)
-        # Get topics for the particular child
-        topicList = getTopicSelectList(request.form["child"], True)
-        # Return the template to be rendered in the "results" divider
-        # and the new list of topics to be updated
-        return jsonify({
-            "results": render_template(
-                "view_child_results.html", title="Results",
-                results=results, form=form
-            ),
-            "topics": topicList
-        })
-    elif request.method == "POST" and "topicChange" in request.form:
-        # If topic selection is changed, get results for particular
-        # child and particular topic tree
+    # Set the topic select options
+    form.topic.choices = topicList
+
+    if request.method == "POST":
+        if "childChange" in request.form:
+            # When child selection is changed
+            topicID = "0"
+        elif "topicChange" in request.form:
+            # When topic selection is changed
+            topicID = request.form["topic"]
+
+        # Get results for selected child
         if current_user.type == "tutor":
             results = tutorGetResults(
-                request.form["child"], request.form["topic"], None, None
+                request.form["child"], topicID, None, None
             )
         elif current_user.type == "parent":
             results = parentGetResults(
-                request.form["child"], request.form["topic"], None, None
+                request.form["child"], topicID, None, None
             )
-        # Return template of new results
-        return render_template(
-            "view_child_results.html", title="Results",
-            results=results, form=form
-        )
+
+        if "childChange" in request.form:
+            # Get topics for the particular child
+            topicList = getTopicSelectList(request.form["child"], True)
+            # Return the template to be rendered in the 'results' divider
+            # and the new list of topics
+            return jsonify({
+                "results": render_template(
+                    "view_child_results.html", title="Results",
+                    results=results, form=form
+                ),
+                "topics": topicList
+            })
+        elif "topicChange" in request.form:
+            # Return template of new results
+            return render_template(
+                "view_child_results.html", title="Results",
+                results=results, form=form
+            )
 
     return render_template(
         "view_results.html", title="Results", results=results, form=form
@@ -118,7 +128,7 @@ def result_details(childID, resultID):
                 "Child.ParentID AND Child.ChildID=:id"
             ),
                 {"id": childID}
-            ).fetchall()
+            ).fetchall()[0]
         elif current_user.type == "parent":
             child = conn.execute(text(
                 "SELECT Parent.ParentID, Child.ChildID, Child.Firstname, " +
@@ -127,20 +137,17 @@ def result_details(childID, resultID):
                 "WHERE Parent.ParentID=Child.ParentID AND Child.ChildID=:id"
             ),
                 {"id": childID}
-            ).fetchall()
+            ).fetchall()[0]
 
-        if child[0][0] != current_user.userID:
+        if child[0] != current_user.userID:
             # If child is not linked to user
             flash("You are not permitted to access this page.", "danger")
             return redirect(url_for("other.home"))
 
-        resultDetails = conn.execute(
+        result = conn.execute(
             text("SELECT * FROM Result WHERE ResultID=:rID AND ChildID=:cID"),
             {"rID": resultID, "cID": childID}
-        ).fetchall()
-
-        child = child[0]
-        result = resultDetails[0]
+        ).fetchall()[0]
         topic = conn.execute(
             text("SELECT Name FROM Topic WHERE TopicID=:id"),
             {"id": result[7]}
@@ -162,27 +169,27 @@ def change_result_details(childID, resultID):
     topicList = getTopicSelectList(childID)
 
     with db.engine.connect() as conn:
-        child = conn.execute(text(
+        tutorParentIDs = conn.execute(text(
             "SELECT Parent.TutorID, Parent.ParentID " +
             "FROM Parent, Child " +
             "WHERE Parent.ParentID=Child.ParentID AND Child.ChildID=:id"
         ),
             {"id": childID}
-        ).fetchall()
+        ).fetchall()[0]
 
     if (
-        current_user.userID == child[0][0] or
-        current_user.userID == child[0][1]
+        current_user.userID == tutorParentIDs[0] or
+        current_user.userID == tutorParentIDs[1]
     ):
-        # If user is child's tutor or parent, get result details to
-        # display in form
+        # If user is child's tutor or parent
         with db.engine.connect() as conn:
+            # Get result details to display in form
             currentResult = conn.execute(
                 text("SELECT * FROM Result WHERE ResultID=:id"),
                 {"id": resultID}
-            ).fetchall()
+            ).fetchall()[0]
         # Set child and topic selections within form
-        form = UpdateResultForm(child=childID, topic=currentResult[0][7])
+        form = UpdateResultForm(child=childID, topic=currentResult[7])
         if form.validate_on_submit():
             # If form valid and submitted
             update = updateResult(form, resultID)
@@ -194,9 +201,9 @@ def change_result_details(childID, resultID):
             form.date.data = datetime.datetime.strptime(
                 currentResult[0][1], "%Y-%m-%d"
             )
-            form.type.data = currentResult[0][2]
-            form.studentMark.data = currentResult[0][3]
-            form.totalMark.data = currentResult[0][4]
+            form.type.data = currentResult[2]
+            form.studentMark.data = currentResult[3]
+            form.totalMark.data = currentResult[4]
         else:
             form.child.choices = children
             form.topic.choices = topicList
@@ -212,7 +219,7 @@ def change_result_details(childID, resultID):
 
         return render_template(
             "change_result_details.html", title="Change Result Details",
-            form=form, resultID=currentResult[0][0], childID=childID
+            form=form, resultID=currentResult[0], childID=childID
         )
     else:
         # If user isn't child's tutor or parent
@@ -225,16 +232,16 @@ def change_result_details(childID, resultID):
 def delete_result(childID, resultID):
     with db.engine.connect() as conn:
         with conn.begin():
-            child = conn.execute(text(
+            tutorParentIDs = conn.execute(text(
                 "SELECT Parent.TutorID, Parent.ParentID " +
                 "FROM Parent, Child " +
                 "WHERE Parent.ParentID=Child.ParentID AND Child.ChildID=:id"
             ),
                 {"id": childID}
-            ).fetchall()
+            ).fetchall()[0]
             if (
-                current_user.userID == child[0][0] or
-                current_user.userID == child[0][1]
+                current_user.userID == tutorParentIDs[0] or
+                current_user.userID == tutorParentIDs[1]
             ):
                 conn.execute(
                     text("DELETE FROM Result WHERE ResultID=:id"),
@@ -250,9 +257,10 @@ def delete_result(childID, resultID):
 @results.route("/results/scatter/graph", methods=["GET", "POST"])
 @login_required()
 def scatter_graph():
-    children = getChildrenSelectList()
     form = LogResultForm()
+    children = getChildrenSelectList()
     form.child.choices = children
+
     if len(children) != 0:
         # Get the topics for the default child selection
         topicList = getTopicSelectList(children[0][0])
@@ -282,56 +290,55 @@ def scatter_graph():
     else:
         coefficients = (0, 0)
 
-    if request.method == "POST" and "childChange" in request.form:
-        # If child selection is changed, get topics for child
-        topicList = getTopicSelectList(request.form["child"])
-        # Get results for topic and subtopics for selected child
-        if len(topicList) != 0:
+    if request.method == "POST":
+        if "childChange" in request.form:
+            # If child selection is changed, get topics for child
+            topicList = getTopicSelectList(request.form["child"])
+            # Get results for topic and subtopics for selected child
+            if len(topicList) != 0:
+                if current_user.type == "tutor":
+                    results = tutorGetResults(
+                        request.form["child"], topicList[0][0], None, None
+                    )[::-1]
+                elif current_user.type == "parent":
+                    results = parentGetResults(
+                        request.form["child"], topicList[0][0], None, None
+                    )[::-1]
+                numTopics = topicTreeLength(
+                    request.form["child"], topicList[0][0]
+                )
+            else:
+                results = []
+                numTopics = 0
+        elif "topicChange" in request.form:
+            # If topic selection is changed
             if current_user.type == "tutor":
                 results = tutorGetResults(
-                    request.form["child"], topicList[0][0], None, None
+                    request.form["child"], request.form["topic"], None, None
                 )[::-1]
             elif current_user.type == "parent":
                 results = parentGetResults(
-                    request.form["child"], topicList[0][0], None, None
+                    request.form["child"], request.form["topic"], None, None
                 )[::-1]
-            numTopics = topicTreeLength(request.form["child"], topicList[0][0])
-        else:
-            results = []
-            numTopics = 0
+            numTopics = topicTreeLength(
+                request.form["child"], request.form["topic"]
+            )
 
         if len(results) > 1:
             coefficients = getCoefficients(results)
         else:
             coefficients = (0, 0)
 
-        return jsonify({
-            "results": results, "topics": topicList,
-            "coefficients": coefficients, "topicLength": numTopics
-        })
-    elif request.method == "POST" and "topicChange" in request.form:
-        # If topic selection is changed
-        if current_user.type == "tutor":
-            results = tutorGetResults(
-                request.form["child"], request.form["topic"], None, None
-            )[::-1]
-        elif current_user.type == "parent":
-            results = parentGetResults(
-                request.form["child"], request.form["topic"], None, None
-            )[::-1]
-        numTopics = topicTreeLength(
-            request.form["child"], request.form["topic"]
-        )
-
-        if len(results) > 1:
-            coefficients = getCoefficients(results)
-        else:
-            coefficients = (0, 0)
-
-        return jsonify({
-            "results": results, "coefficients": coefficients,
-            "topicLength": numTopics
-        })
+        if "childChange" in request.form:
+            return jsonify({
+                "results": results, "topics": topicList,
+                "coefficients": coefficients, "topicLength": numTopics
+            })
+        elif "topicChange" in request.form:
+            return jsonify({
+                "results": results, "coefficients": coefficients,
+                "topicLength": numTopics
+            })
 
     return render_template(
         "scatter_graph.html", title="Results", form=form, results=results,

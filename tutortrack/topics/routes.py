@@ -22,9 +22,10 @@ topics = Blueprint(
 @topics.route("/create/topic", methods=["GET", "POST"])
 @login_required(type="tutor")
 def create_topic():
-    children = getChildrenSelectList()
     form = CreateTopicForm()
-    form.child.choices = children  # Set the child select options
+    # Set the child select options
+    children = getChildrenSelectList()
+    form.child.choices = children
     if len(children) != 0:
         topicList = getTopicSelectList(children[0][0])
     else:
@@ -32,6 +33,7 @@ def create_topic():
     # Set the 'parent topic' select options
     form.parentTopic.choices = topicList
     if form.validate_on_submit():
+        # If form valid and submitted
         createTopic(form)
         return redirect(url_for("topics.view_topics"))
     else:
@@ -54,9 +56,10 @@ def create_topic():
 @topics.route("/view/topics", methods=["GET", "POST"])
 @login_required(type="tutor")
 def view_topics():
-    children = getChildrenSelectList()
     form = CreateTopicForm()
-    form.child.choices = children  # Set the child select options
+    # Set the child select options
+    children = getChildrenSelectList()
+    form.child.choices = children
     if len(children) != 0:
         data = getHierarchyChartData(children[0][0])
     else:
@@ -78,25 +81,24 @@ def view_topics():
 @login_required(type="tutor")
 def change_topic_details(childID, topicName):
     with db.engine.connect() as conn:
-        child = conn.execute(text(
+        tutorParentIDs = conn.execute(text(
             "SELECT Parent.TutorID, Parent.ParentID " +
             "FROM Parent, Child " +
             "WHERE Parent.ParentID=Child.ParentID AND Child.ChildID=:id"
         ),
             {"id": childID}
-        ).fetchall()
+        ).fetchall()[0]
         # If user is the child's tutor or parent
         if (
-            current_user.userID == child[0][0] or
-            current_user.userID == child[0][1]
+            current_user.userID == tutorParentIDs[0] or
+            current_user.userID == tutorParentIDs[1]
         ):
             # Get child details
             child = conn.execute(text(
                 "SELECT Firstname, Surname FROM Child WHERE ChildID=:id"
             ),
                 {"id": childID}
-            ).fetchall()
-            child = child[0]
+            ).fetchall()[0]
             # Get topic details to display in form
             topicID = conn.execute(
                 text("SELECT TopicID FROM Topic WHERE Name=:name"),
@@ -201,8 +203,8 @@ def delete_topic(childID, topicName):
             "WHERE Parent.ParentID=Child.ParentID AND Child.ChildID=:id"
         ),
             {"id": childID}
-        ).fetchall()
-        if current_user.userID == child[0][0]:
+        ).fetchall()[0]
+        if current_user.userID == child[0]:
             topic = conn.execute(text(
                 "SELECT Topic.TopicID, Topic.Name, ChildTopic.Level, " +
                 "ChildTopic.ParentTopicID " +
