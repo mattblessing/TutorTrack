@@ -199,7 +199,7 @@ def change_result_details(childID, resultID):
             form.child.choices = children
             form.topic.choices = topicList
             form.date.data = datetime.datetime.strptime(
-                currentResult[0][1], "%Y-%m-%d"
+                currentResult[1], "%Y-%m-%d"
             )
             form.type.data = currentResult[2]
             form.studentMark.data = currentResult[3]

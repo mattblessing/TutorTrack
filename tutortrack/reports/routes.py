@@ -105,6 +105,9 @@ def view_reports():
                 return jsonify({"error": "notDates"})
         elif "sendReport" in request.form:
             # When 'Send Report' is pressed
+            topicID = request.form["topic"]
+            startDate = request.form["startDate"]
+            endDate = request.form["endDate"]
             with db.engine.connect() as conn:
                 # Get child and parent details
                 child = conn.execute(text(
@@ -122,8 +125,7 @@ def view_reports():
                     "WHERE Topic.TopicID=:tID AND Topic.TopicID=" +
                     "ChildTopic.TopicID AND ChildTopic.ChildID=:cID"
                 ),
-                    {"tID": request.form["topic"],
-                        "cID": request.form["child"]}
+                    {"tID": topicID, "cID": request.form["child"]}
                 ).fetchall()
 
         # Get results based on selection
