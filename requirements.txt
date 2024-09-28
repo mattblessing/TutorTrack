@@ -1,0 +1,12 @@
+Flask==3.0.3
+Flask_Bcrypt==1.0.1
+Flask_Login==0.6.3
+flask_mail==0.10.0
+flask_sqlalchemy==3.1.1
+flask_wtf==1.2.1
+itsdangerous==2.2.0
+MarkupSafe==2.1.5
+quickchart.io==0.0.1
+reportlab==4.2.2
+SQLAlchemy==2.0.35
+WTForms==3.1.2
