@@ -1,5 +1,5 @@
 # TutorTrack
-A Tutoring Progress Tracker
+A hub for parents and tutors to track the progress of tutees.
 
 The website is available [here](https://mattblessing.eu.pythonanywhere.com).
 
